@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CampusFirst Portal - Lost and Found</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+  <nav class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-50">
+    <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('browse')">
+      <div class="bg-indigo-600 text-white rounded-lg px-3 py-1.5 font-bold tracking-wider">CampusFirst</div>
+      <span class="text-lg font-bold text-gray-800 hidden sm:inline">Lost & Found Portal</span>
+    </div>
+    <div class="flex items-center space-x-2 sm:space-x-4 text-sm font-medium">
+      <button onclick="switchTab('signin')" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-lg transition"><i class="fa-solid fa-user-circle mr-1"></i> Sign In</button>
+      <button onclick="switchTab('browse')" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-lg transition"><i class="fa-solid fa-compass mr-1"></i> Browse</button>
+      <button onclick="switchTab('admin')" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-lg transition"><i class="fa-solid fa-shield-halved mr-1"></i> Admin Queue</button>
+      <button onclick="switchTab('scout')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-lg transition font-semibold"><i class="fa-solid fa-robot mr-1"></i> Scout AI</button>
+      <button onclick="switchTab('report')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Report</button>
+    </div>
+  </nav>
+
+  <header class="relative bg-slate-900 text-white py-16 px-6 text-center overflow-hidden">
+    <div class="absolute inset-0 opacity-20 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80');"></div>
+    <div class="relative max-w-2xl mx-auto space-y-4">
+      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">Lost something? We'll help you find it.</h1>
+      <p class="text-gray-300 text-sm sm:text-base">Report lost or found items across campus, submit secure claims, and reconnect your items with their rightful owners.</p>
+    </div>
+    <div class="relative max-w-xl mx-auto grid grid-cols-3 gap-4 mt-10 pt-6 border-t border-gray-800 text-center">
+      <div>
+        <span id="statTotal" class="text-2xl sm:text-3xl font-bold text-indigo-400">0</span>
+        <p class="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider mt-1">Total Items</p>
+      </div>
+      <div>
+        <span id="statLost" class="text-2xl sm:text-3xl font-bold text-red-400">0</span>
+        <p class="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider mt-1">Lost</p>
+      </div>
+      <div>
+        <span id="statFound" class="text-2xl sm:text-3xl font-bold text-emerald-400">0</span>
+        <p class="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider mt-1">Found</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto py-10 px-4 sm:px-6">
+    <!-- 1. Sign In Section -->
+    <section id="tab-signin" style="display: none;" class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+      <div class="text-center">
+        <h2 class="text-2xl font-bold text-gray-900">Identity Service</h2>
+        <p class="text-sm text-gray-500 mt-1">Authenticate your campus credentials to proceed</p>
+      </div>
+      <form onsubmit="handleSignIn(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Campus Email</label>
+          <input type="email" id="signInEmail" placeholder="student@campus.edu" class="border border-gray-300 p-3 w-full rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm" required>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Full Name</label>
+          <input type="text" id="signInName" placeholder="Aniruddha Chaudhury" class="border border-gray-300 p-3 w-full rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm" required>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Select Role</label>
+          <select id="signInRole" class="border border-gray-300 p-3 w-full rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white">
+            <option value="Student">Student</option>
+            <option value="Staff">Staff</option>
+            <option value="Admin">Administrator</option>
+          </select>
+        </div>
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium p-3 rounded-xl w-full transition shadow-sm">Sign In</button>
+      </form>
+      <div id="authStatus" class="text-center text-sm font-semibold text-emerald-600"></div>
+    </section>
+
+    <!-- 2. Browse Reports Section -->
+    <section id="tab-browse" class="space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-bold text-gray-800">Recent Items</h2>
+        <div class="flex w-full sm:w-auto gap-2">
+          <input type="text" id="searchInput" placeholder="Search item title or description..." class="border border-gray-300 px-4 py-2 rounded-xl text-sm w-full sm:w-72 focus:ring-2 focus:ring-indigo-500 outline-none">
+          <button onclick="loadItems()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-medium transition">Search</button>
+        </div>
+      </div>
+      <div id="itemsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+    </section>
+
+    <!-- 3. Post Item Report Section -->
+    <section id="tab-report" style="display: none;" class="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-900">Post Lost / Found Report</h2>
+        <p class="text-sm text-gray-500 mt-1">Provide accurate details to help locate or identify the item.</p>
+      </div>
+      <form id="reportForm" onsubmit="submitReport(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Item Title</label>
+          <input type="text" id="title" placeholder="e.g. Wireless Headphones / MacBook" class="border border-gray-300 p-3 w-full rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500" required>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Description</label>
+          <textarea id="description" placeholder="Include color, brand, distinct marks..." class="border border-gray-300 p-3 w-full rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 h-24" required></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Category</label>
+            <select id="category" class="border border-gray-300 p-3 w-full rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="Electronics">Electronics</option>
+              <option value="Books">Books</option>
+              <option value="Accessories">Accessories</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Report Type</label>
+            <select id="type" class="border border-gray-300 p-3 w-full rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="Lost">Lost</option>
+              <option value="Found">Found</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Location</label>
+            <input type="text" id="location" placeholder="e.g. Central Library" class="border border-gray-300 p-3 w-full rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500" required>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Date</label>
+            <input type="date" id="dateEvent" class="border border-gray-300 p-3 w-full rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500" required>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Upload Photo (Optional)</label>
+          <input type="file" id="imageFile" class="border border-gray-300 p-2.5 w-full rounded-xl text-sm bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+        </div>
+        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium p-3 rounded-xl w-full transition shadow-sm">Publish Report</button>
+      </form>
+    </section>
+
+    <!-- 4. Admin Review Queue Section -->
+    <section id="tab-admin" style="display: none;" class="space-y-6">
+      <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-bold text-gray-800">Administrator Review Queue</h2>
+        <p class="text-sm text-gray-500 mt-1">Verify student/staff ownership claims and resolve cases.</p>
+      </div>
+      <div id="adminQueue" class="space-y-4"></div>
+    </section>
+
+    <!-- 5. Scout AI Chat Section -->
+    <section id="tab-scout" style="display: none;" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[550px]">
+      <div class="bg-indigo-900 text-white p-4 flex items-center space-x-3">
+        <div class="bg-indigo-700 p-2 rounded-xl"><i class="fa-solid fa-robot text-lg"></i></div>
+        <div>
+          <h2 class="font-bold text-base">Scout AI Assistant</h2>
+          <p class="text-xs text-indigo-200">Ask about open campus items or your claim statuses</p>
+        </div>
+      </div>
+      <div id="chatHistory" class="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50 text-sm">
+        <div class="flex items-start space-x-2">
+          <div class="bg-indigo-600 text-white rounded-full h-7 w-7 flex items-center justify-center text-xs font-bold">🤖</div>
+          <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200 max-w-[80%] text-gray-700">
+            Hello! I am Scout, your campus lost-and-found assistant. How can I help you today?
+          </div>
+        </div>
+      </div>
+      <div class="p-4 bg-white border-t border-gray-200 flex gap-2">
+        <input type="text" id="chatInput" placeholder="Type a message to Scout..." class="border border-gray-300 p-3 rounded-xl w-full text-sm outline-none focus:ring-2 focus:ring-indigo-500" onkeypress="if(event.key === 'Enter') sendScoutMessage()">
+        <button onclick="sendScoutMessage()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl transition text-sm font-medium"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let currentUser = null;
+
+    function switchTab(tab) {
+      ['signin', 'browse', 'report', 'admin', 'scout'].forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        if (el) el.style.display = 'none';
+      });
+      const activeEl = document.getElementById(`tab-${tab}`);
+      if (activeEl) {
+        if (tab === 'scout') {
+          activeEl.style.display = 'flex';
+        } else {
+          activeEl.style.display = 'block';
+        }
+      }
+      if (tab === 'browse') loadItems();
+      if (tab === 'admin') loadAdminQueue();
+    }
+
+    async function handleSignIn(e) {
+      e.preventDefault();
+      const email = document.getElementById('signInEmail').value;
+      const full_name = document.getElementById('signInName').value;
+      const role = document.getElementById('signInRole').value;
+      const res = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ EMAIL: email, FULL_NAME: full_name, ROLE: role })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        currentUser = data.user;
+        document.getElementById('authStatus').innerText = `Successfully signed in as ${currentUser.FULL_NAME || currentUser.full_name} (${currentUser.ROLE || currentUser.role})!`;
+        setTimeout(() => switchTab('browse'), 1000);
+      } else {
+        alert(data.error);
+      }
+    }
+
+    async function loadItems() {
+      const search = document.getElementById('searchInput').value;
+      const res = await fetch(`/api/items?search=${search || ''}`);
+      const items = await res.json();
+      let total = items.length;
+      let lost = items.filter(i => (i.TYPE || i.type || '').toLowerCase() === 'lost').length;
+      let found = items.filter(i => (i.TYPE || i.type || '').toLowerCase() === 'found').length;
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statLost').innerText = lost;
+      document.getElementById('statFound').innerText = found;
+      const grid = document.getElementById('itemsGrid');
+      if(items.length === 0) {
+        grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400">No records found matching your query.</div>`;
+        return;
+      }
+      grid.innerHTML = items.map(item => {
+        const typeVal = item.TYPE || item.type || 'Lost';
+        const statusVal = item.STATUS || item.status || 'Open';
+        const isLost = typeVal.toLowerCase() === 'lost';
+        let statusBadgeColor = 'bg-blue-50 text-blue-600';
+        if (statusVal === 'Claimed') statusBadgeColor = 'bg-yellow-50 text-yellow-600';
+        if (statusVal === 'Matched') statusBadgeColor = 'bg-purple-50 text-purple-600';
+        if (statusVal === 'Closed') statusBadgeColor = 'bg-gray-100 text-gray-600';
+        return `
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col justify-between hover:shadow-md transition">
+            <div>
+              ${item.IMAGE_URL || item.image_url ? `<img src="${item.IMAGE_URL || item.image_url}" class="h-44 object-cover w-full">` : `<div class="h-32 bg-gray-100 flex items-center justify-center text-gray-400 text-xs"><i class="fa-solid fa-image text-2xl"></i></div>`}
+              <div class="p-4 space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-[10px] uppercase px-2.5 py-1 rounded-full font-bold ${isLost ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}">${typeVal}</span>
+                  <span class="text-[10px] uppercase px-2.5 py-1 rounded-full font-bold ${statusBadgeColor}">${statusVal}</span>
+                </div>
+                <h3 class="font-bold text-gray-900 text-base line-clamp-1">${item.TITLE || item.title}</h3>
+                <p class="text-gray-600 text-xs line-clamp-2">${item.DESCRIPTION || item.description}</p>
+                <p class="text-xs text-gray-400 pt-1"><i class="fa-solid fa-location-dot mr-1 text-gray-400"></i>${item.LOCATION || item.location} | ${item.DATE_EVENT || item.date_event || ''}</p>
+              </div>
+            </div>
+            <div class="p-4 pt-0">
+              <button onclick="submitClaim(${item.ITEM_ID || item.item_id})" class="w-full bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white font-medium text-xs py-2.5 rounded-xl transition">Claim Item</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function submitReport(e) {
+      e.preventDefault();
+      if (!currentUser) { alert('Please sign in first!'); switchTab('signin'); return; }
+      const formData = new FormData();
+      formData.append('USER_ID', currentUser.USER_ID || currentUser.user_id);
+      formData.append('TITLE', document.getElementById('title').value);
+      formData.append('DESCRIPTION', document.getElementById('description').value);
+      formData.append('CATEGORY', document.getElementById('category').value);
+      formData.append('LOCATION', document.getElementById('location').value);
+      formData.append('DATE_EVENT', document.getElementById('dateEvent').value);
+      formData.append('TYPE', document.getElementById('type').value);
+      const img = document.getElementById('imageFile').files[0];
+      if (img) formData.append('image', img);
+      const res = await fetch('/api/items', { method: 'POST', body: formData });
+      if (res.ok) { alert('Report posted successfully!'); document.getElementById('reportForm').reset(); switchTab('browse'); }
+    }
+
+    async function submitClaim(itemId) {
+      if (!currentUser) { alert('Please sign in first!'); switchTab('signin'); return; }
+      const proof = prompt("Provide private ownership evidence description (e.g. serial number, unique marks):");
+      if (!proof) return;
+      const res = await fetch('/api/claims', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ITEM_ID: itemId, CLAIMANT_ID: currentUser.USER_ID || currentUser.user_id, PROOF_DESCRIPTION: proof })
+      });
+      if (res.ok) { alert('Claim submitted successfully for review.'); loadItems(); }
+    }
+
+    async function loadAdminQueue() {
+      const res = await fetch('/api/claims/queue');
+      const claims = await res.json();
+      const container = document.getElementById('adminQueue');
+      if(claims.length === 0) {
+        container.innerHTML = `<div class="bg-white p-8 rounded-2xl text-center text-gray-400 border border-gray-200">No pending claims in the review queue.</div>`;
+        return;
+      }
+      container.innerHTML = claims.map(c => `
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div class="space-y-1">
+            <h4 class="font-bold text-gray-900">${c.ITEM_TITLE || c.item_title}</h4>
+            <p class="text-xs text-gray-600"><span class="font-semibold">Claimant:</span> ${c.CLAIMANT_NAME || c.claimant_name}</p>
+            <p class="text-xs text-gray-500 bg-gray-50 p-2 rounded-lg mt-1 border border-gray-100"><span class="font-semibold">Proof:</span> ${c.PROOF_DESCRIPTION || c.proof_description}</p>
+          </div>
+          <div class="flex space-x-2 w-full sm:w-auto justify-end">
+            <button onclick="reviewClaim(${c.CLAIM_ID || c.claim_id}, 'Approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-xs font-medium rounded-xl transition">Approve</button>
+            <button onclick="reviewClaim(${c.CLAIM_ID || c.claim_id}, 'Rejected')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-xs font-medium rounded-xl transition">Reject</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function reviewClaim(claimId, status) {
+      if (!currentUser) { alert('Please sign in as admin first!'); return; }
+      const comment = prompt("Optional review note:");
+      await fetch('/api/claims/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ CLAIM_ID: claimId, STATUS: status, ADMIN_ID: currentUser.USER_ID || currentUser.user_id, REVIEW_COMMENT: comment })
+      });
+      loadAdminQueue();
+    }
+
+    async function sendScoutMessage() {
+      if (!currentUser) { alert('Please sign in first!'); switchTab('signin'); return; }
+      const input = document.getElementById('chatInput');
+      const message = input.value;
+      if (!message) return;
+      const history = document.getElementById('chatHistory');
+      history.innerHTML += `
+        <div class="flex items-end justify-end space-x-2">
+          <div class="bg-indigo-600 text-white p-3 rounded-2xl max-w-[80%] text-sm shadow-sm">${message}</div>
+        </div>`;
+      input.value = '';
+      history.scrollTop = history.scrollHeight;
+      const res = await fetch('/api/scout/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ USER_ID: currentUser.USER_ID || currentUser.user_id, MESSAGE: message })
+      });
+      const data = await res.json();
+      history.innerHTML += `
+        <div class="flex items-start space-x-2">
+          <div class="bg-indigo-600 text-white rounded-full h-7 w-7 flex items-center justify-center text-xs font-bold">🤖</div>
+          <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200 max-w-[80%] text-gray-700 whitespace-pre-line">${data.REPLY || data.reply}</div>
+        </div>`;
+      history.scrollTop = history.scrollHeight;
+    }
+
+    // Automatically load items on initial page load
+    window.onload = function() {
+      loadItems();
+    };
+  </script>
+</body>
+</html>
