@@ -86,10 +86,22 @@ exports.reviewClaim = (req, res) => {
 
         // If approved, mark the item as 'Matched' and reject competing pending claims
         if (STATUS === 'Approved') {
-            db.get(`SELECT ITEM_ID FROM CLAIMS WHERE CLAIM_ID = ?`, [CLAIM_ID], (err, row) => {
+            db.get(`SELECT ITEM_ID, CLAIMANT_ID FROM CLAIMS WHERE CLAIM_ID = ?`, [CLAIM_ID], (err, row) => {
                 if (row) {
                     db.run(`UPDATE ITEMS SET STATUS = 'Matched' WHERE ITEM_ID = ?`, [row.ITEM_ID]);
                     db.run(`UPDATE CLAIMS SET CLAIM_STATUS = 'Rejected' WHERE ITEM_ID = ? AND CLAIM_ID != ?`, [row.ITEM_ID, CLAIM_ID]);
+
+                    // Enqueue notification for claimant
+                    db.get(`SELECT * FROM ITEMS WHERE ITEM_ID = ?`, [row.ITEM_ID], (itemErr, item) => {
+                        if (item) {
+                            const notifTitle = `Claim Approved: ${item.TITLE}`;
+                            const notifMsg = `Your ownership claim for "${item.TITLE}" has been approved by the Administrator. Please proceed to campus desk for handover.`;
+                            db.run(
+                                `INSERT INTO NOTIFICATIONS (USER_ID, ITEM_ID, TITLE, MESSAGE, TYPE, IS_READ) VALUES (?, ?, ?, ?, 'Claim_Approved', 0)`,
+                                [row.CLAIMANT_ID, item.ITEM_ID, notifTitle, notifMsg]
+                            );
+                        }
+                    });
                 }
             });
         } else if (STATUS === 'Rejected') {

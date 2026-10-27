@@ -146,3 +146,60 @@ exports.getStats = (req, res) => {
         });
     });
 };
+
+// GET /api/items/pending-lost - Fetch lost items for admin review queue
+exports.getPendingLostItems = (req, res) => {
+    const query = `
+        SELECT ITEMS.*, USERS.FULL_NAME AS REPORTER_NAME, USERS.EMAIL AS REPORTER_EMAIL 
+        FROM ITEMS 
+        JOIN USERS ON ITEMS.USER_ID = USERS.USER_ID 
+        WHERE LOWER(ITEMS.TYPE) = 'lost' AND ITEMS.STATUS = 'Open'
+        ORDER BY ITEMS.CREATED_AT DESC
+    `;
+    db.all(query, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows || []);
+    });
+};
+
+// POST /api/items/:id/approve - Admin approves a lost item
+exports.approveItem = (req, res) => {
+    const itemId = req.params.id;
+    const { ADMIN_ID, NOTE } = req.body;
+
+    db.get('SELECT * FROM ITEMS WHERE ITEM_ID = ?', [itemId], (err, item) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!item) return res.status(404).json({ error: 'Item not found.' });
+
+        // Update item status to 'Approved'
+        db.run("UPDATE ITEMS SET STATUS = 'Approved' WHERE ITEM_ID = ?", [itemId], function (updateErr) {
+            if (updateErr) return res.status(500).json({ error: updateErr.message });
+
+            // Enqueue notification for the person who reported it as lost
+            const notifTitle = `Lost Item Approved: ${item.TITLE}`;
+            const notifMsg = `Your reported lost item "${item.TITLE}" has been reviewed and approved by the Administrator. Please check details to retrieve your item.`;
+            
+            db.run(
+                `INSERT INTO NOTIFICATIONS (USER_ID, ITEM_ID, TITLE, MESSAGE, TYPE, IS_READ) 
+                 VALUES (?, ?, ?, ?, 'Lost_Approved', 0)`,
+                [item.USER_ID, item.ITEM_ID, notifTitle, notifMsg],
+                function (notifErr) {
+                    if (notifErr) console.error('Error inserting notification:', notifErr.message);
+
+                    // Add to audit logs
+                    db.run(
+                        `INSERT INTO AUDIT_LOGS (USER_ID, ACTION, DETAILS) VALUES (?, 'ITEM_APPROVED', ?)`,
+                        [ADMIN_ID || 1, `Approved lost item #${itemId}: ${item.TITLE}. Enqueued notification for user #${item.USER_ID}.`]
+                    );
+
+                    res.json({
+                        message: 'Item approved successfully and enqueued to user Notification Queue.',
+                        item_id: itemId,
+                        user_id: item.USER_ID,
+                        notification_id: this ? this.lastID : null
+                    });
+                }
+            );
+        });
+    });
+};

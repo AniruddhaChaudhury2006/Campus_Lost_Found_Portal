@@ -85,6 +85,9 @@
       border: 0;
       padding: 10px 0;
       position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
     nav button:hover, nav button.active { color: var(--green); font-weight: 700; }
     nav button.active::after {
@@ -97,6 +100,108 @@
       height: 6px;
       background: var(--green);
       border-radius: 50%;
+    }
+    .nav-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #ffffff;
+      background: #c83b27;
+      border-radius: 10px;
+      line-height: 1;
+      box-shadow: 0 2px 6px rgba(200, 59, 39, 0.4);
+      animation: pulseBadge 2s infinite ease-in-out;
+      margin-left: 2px;
+      transform-origin: center;
+    }
+    @keyframes pulseBadge {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.12); box-shadow: 0 4px 10px rgba(200, 59, 39, 0.55); }
+    }
+    .admin-subtabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 12px;
+    }
+    .admin-subtab-btn {
+      background: #ffffff;
+      border: 1px solid #d8e0d4;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #5d6d5c;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .admin-subtab-btn:hover {
+      background: #f0f4ea;
+      color: var(--green);
+    }
+    .admin-subtab-btn.active {
+      background: var(--green);
+      color: #ffffff;
+      border-color: var(--green);
+    }
+    .notif-card {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      justify-content: space-between;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .notif-card:hover {
+      box-shadow: 0 6px 20px rgba(32, 92, 77, 0.08);
+      transform: translateY(-2px);
+    }
+    .notif-card.unread {
+      border-left: 4px solid #205c4d;
+      background: #fdfefc;
+    }
+    .notif-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: #e7f4ec;
+      color: #216a3a;
+      margin-bottom: 8px;
+    }
+    .notif-badge-pill.claim {
+      background: #fdf5e7;
+      color: #9c6c24;
+    }
+    .notif-thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #eef1e8;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .notif-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     .nav-right { display: flex; align-items: center; gap: 14px; }
     
@@ -607,10 +712,14 @@
         Campus<span>Find</span><span class="brand-dot">.</span>
       </div>
 
-      <nav>
+      <nav id="mainNav">
         <button id="nav-noticeboard" class="active" onclick="switchNav('noticeboard')">Noticeboard</button>
         <button id="nav-dashboard" onclick="switchNav('dashboard')">My dashboard</button>
-        <button id="nav-admin" onclick="switchNav('admin')">Admin Queue</button>
+        <button id="nav-admin" onclick="switchNav('admin')" style="display: none;">Admin Queue</button>
+        <button id="nav-notifications" onclick="switchNav('notifications')" style="display: none;">
+          Notification Queue
+          <span id="notifBadge" class="nav-badge" style="display: none;">0</span>
+        </button>
       </nav>
 
       <div class="nav-right">
@@ -816,9 +925,45 @@
       <div class="dashboard-heading">
         <div class="eyebrow"><span class="green-dot"></span> ADMINISTRATOR WORKSPACE</div>
         <h2>Administrator Review Queue</h2>
-        <p>Verify ownership evidence, coordinate handovers, and close resolved cases.</p>
+        <p>Review and approve lost items, verify ownership evidence, coordinate handovers, and close resolved cases.</p>
       </div>
-      <div id="adminQueueList"></div>
+
+      <div class="admin-subtabs">
+        <button id="adminTabLost" class="admin-subtab-btn active" onclick="switchAdminTab('lost')">
+          <i class="fa-solid fa-magnifying-glass"></i> Lost Items Pending Approval (<span id="adminLostCount">0</span>)
+        </button>
+        <button id="adminTabClaims" class="admin-subtab-btn" onclick="switchAdminTab('claims')">
+          <i class="fa-solid fa-shield-halved"></i> Ownership Claims (<span id="adminClaimsCount">0</span>)
+        </button>
+      </div>
+
+      <!-- Pending Lost Items Section -->
+      <div id="adminLostSection">
+        <div id="adminLostList"></div>
+      </div>
+
+      <!-- Claims Review Queue Section -->
+      <div id="adminClaimsSection" style="display: none;">
+        <div id="adminQueueList"></div>
+      </div>
+    </div>
+
+    <!-- 4. NOTIFICATION QUEUE VIEW -->
+    <div id="view-notifications" style="display: none;" class="dashboard-section">
+      <div class="dashboard-heading" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <div class="eyebrow"><span class="green-dot"></span> ITEM UPDATES · NOTIFICATION QUEUE</div>
+          <h2>Notification Queue</h2>
+          <p>Approved lost items and administrative updates for your account.</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button class="button light small" onclick="markAllNotificationsRead()">
+            <i class="fa-solid fa-check-double"></i> Mark all as acknowledged
+          </button>
+        </div>
+      </div>
+
+      <div id="notificationQueueList"></div>
     </div>
 
   </main>
@@ -1139,15 +1284,113 @@
       } catch (e) {}
     }
 
+    let currentAdminTab = 'lost';
+
+    function switchAdminTab(tab) {
+      currentAdminTab = tab;
+      const tabLost = document.getElementById('adminTabLost');
+      const tabClaims = document.getElementById('adminTabClaims');
+      const secLost = document.getElementById('adminLostSection');
+      const secClaims = document.getElementById('adminClaimsSection');
+
+      if (tabLost && tabClaims && secLost && secClaims) {
+        tabLost.classList.toggle('active', tab === 'lost');
+        tabClaims.classList.toggle('active', tab === 'claims');
+        secLost.style.display = tab === 'lost' ? 'block' : 'none';
+        secClaims.style.display = tab === 'claims' ? 'block' : 'none';
+      }
+    }
+
     async function loadAdminQueue() {
+      const isAdmin = currentUser && (currentUser.ROLE === 'Admin' || currentUser.ROLE === 'Administrator');
+      if (!isAdmin) {
+        alert('Access restricted to administrators only.');
+        switchNav('noticeboard');
+        return;
+      }
+      loadAdminLostItems();
+      loadAdminClaimsQueue();
+    }
+
+    async function loadAdminLostItems() {
+      try {
+        const res = await fetch('/api/items/pending-lost');
+        const items = await res.json();
+        const countEl = document.getElementById('adminLostCount');
+        if (countEl) countEl.innerText = items.length;
+
+        const container = document.getElementById('adminLostList');
+        if (!container) return;
+
+        if (!items.length) {
+          container.innerHTML = `<div style="padding: 40px; background: #fff; border: 1px solid var(--line); border-radius: 14px; text-align: center; color: #828e7c;">No pending lost item reports awaiting review.</div>`;
+          return;
+        }
+
+        container.innerHTML = items.map(item => {
+          const imgHtml = item.IMAGE_URL 
+            ? `<img src="${item.IMAGE_URL}" alt="${item.TITLE}">` 
+            : getVectorArt(item.TITLE, item.CATEGORY);
+
+          return `
+            <div style="background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+              <div style="display: flex; gap: 16px; align-items: center;">
+                <div class="notif-thumb">${imgHtml}</div>
+                <div>
+                  <div style="font-size: 11px; font-weight: 700; color: #a44f3b; text-transform: uppercase; margin-bottom: 4px;">
+                    <i class="fa-solid fa-magnifying-glass"></i> Lost Item Report #${item.ITEM_ID}
+                  </div>
+                  <h4 style="font-size: 16px; font-weight: 700; color: #1e332a;">${item.TITLE}</h4>
+                  <p style="font-size: 12px; color: #6b7764; margin: 4px 0;">Reporter: <strong>${item.REPORTER_NAME}</strong> (${item.REPORTER_EMAIL || 'ID: ' + item.USER_ID})</p>
+                  <p style="font-size: 12.5px; color: #3b5238; margin-top: 4px;">${item.DESCRIPTION}</p>
+                  <p style="font-size: 11.5px; color: #86927f; margin-top: 4px;"><i class="fa-solid fa-location-dot"></i> ${item.LOCATION} &bull; ${item.DATE_EVENT}</p>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                <button onclick="approveLostItem(${item.ITEM_ID})" class="button primary small">
+                  <i class="fa-solid fa-check"></i> Approve Lost Item
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Error loading admin lost items:', err);
+      }
+    }
+
+    async function approveLostItem(itemId) {
+      if (!currentUser) { alert('Please sign in as admin first!'); return; }
+      try {
+        const res = await fetch(`/api/items/${itemId}/approve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ADMIN_ID: currentUser.USER_ID })
+        });
+        const data = await res.json();
+        alert(data.message || 'Lost item approved and enqueued to reporter Notification Queue!');
+        loadAdminQueue();
+        fetchItems();
+      } catch (err) {
+        alert('Failed to approve item: ' + err.message);
+      }
+    }
+
+    async function loadAdminClaimsQueue() {
       try {
         const res = await fetch('/api/claims/queue');
         const queue = await res.json();
+        const countEl = document.getElementById('adminClaimsCount');
+        if (countEl) countEl.innerText = queue.length;
+
         const container = document.getElementById('adminQueueList');
+        if (!container) return;
+
         if (!queue.length) {
-          container.innerHTML = `<div style="padding: 40px; background: #fff; border: 1px solid var(--line); border-radius: 14px; text-align: center; color: #828e7c;">No pending claims in review queue.</div>`;
+          container.innerHTML = `<div style="padding: 40px; background: #fff; border: 1px solid var(--line); border-radius: 14px; text-align: center; color: #828e7c;">No pending ownership claims in review queue.</div>`;
           return;
         }
+
         container.innerHTML = queue.map(c => `
           <div style="background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 20px;">
             <div>
@@ -1157,13 +1400,15 @@
                 "${c.PROOF_DESCRIPTION}"
               </div>
             </div>
-            <div style="display: flex; gap: 8px;">
-              <button onclick="reviewClaim(${c.CLAIM_ID}, 'Approved')" class="button primary small"><i class="fa-solid fa-check"></i> Approve</button>
+            <div style="display: flex; gap: 8px; flex-shrink: 0;">
+              <button onclick="reviewClaim(${c.CLAIM_ID}, 'Approved')" class="button primary small"><i class="fa-solid fa-check"></i> Approve Claim</button>
               <button onclick="reviewClaim(${c.CLAIM_ID}, 'Rejected')" class="button light small" style="color: #a34835;"><i class="fa-solid fa-xmark"></i> Reject</button>
             </div>
           </div>
         `).join('');
-      } catch (err) {}
+      } catch (err) {
+        console.error('Error loading admin claims queue:', err);
+      }
     }
 
     async function reviewClaim(claimId, status) {
@@ -1177,19 +1422,176 @@
       fetchItems();
     }
 
-    function switchNav(view) {
-      if (view === 'dashboard' && !currentUser) {
+    // NOTIFICATION QUEUE LOGIC (FOR STUDENTS AND OTHER ROLES)
+    async function fetchNotificationCount() {
+      if (!currentUser) {
+        const badge = document.getElementById('notifBadge');
+        if (badge) badge.style.display = 'none';
+        return;
+      }
+      try {
+        const res = await fetch(`/api/notifications/count/${currentUser.USER_ID}`);
+        const data = await res.json();
+        const badge = document.getElementById('notifBadge');
+        if (badge) {
+          if (data && data.count > 0) {
+            badge.innerText = data.count;
+            badge.style.display = 'inline-flex';
+          } else {
+            badge.innerText = '0';
+            badge.style.display = 'none';
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching notification count:', err);
+      }
+    }
+
+    async function loadNotificationQueue() {
+      if (!currentUser) {
         window.location.href = '/login';
         return;
       }
-      ['noticeboard', 'dashboard', 'admin'].forEach(v => {
+      try {
+        const res = await fetch(`/api/notifications/user/${currentUser.USER_ID}`);
+        const notifs = await res.json();
+        const container = document.getElementById('notificationQueueList');
+
+        if (!notifs.length) {
+          container.innerHTML = `
+            <div style="padding: 50px 20px; background: #fff; border: 1px dashed var(--line); border-radius: 14px; text-align: center;">
+              <i class="fa-regular fa-bell-slash" style="font-size: 34px; color: #a4b39e; margin-bottom: 12px; display: inline-block;"></i>
+              <h4 style="font-size: 16px; font-weight: 700; color: #1e332a;">Your Notification Queue is empty</h4>
+              <p style="font-size: 13px; color: #7f8c79; max-width: 440px; margin: 6px auto 0; line-height: 1.6;">
+                When an Administrator reviews and approves your reported lost items, they will automatically be enqueued here for you to check and retrieve.
+              </p>
+            </div>
+          `;
+          fetchNotificationCount();
+          return;
+        }
+
+        container.innerHTML = notifs.map(n => {
+          const isUnread = Number(n.IS_READ) === 0;
+          const imgHtml = n.ITEM_IMAGE_URL 
+            ? `<img src="${n.ITEM_IMAGE_URL}" alt="${n.ITEM_TITLE}">` 
+            : getVectorArt(n.ITEM_TITLE, n.ITEM_CATEGORY || 'General');
+
+          return `
+            <div class="notif-card ${isUnread ? 'unread' : ''}">
+              <div class="notif-thumb">${imgHtml}</div>
+              <div style="flex: 1;">
+                <div class="notif-badge-pill ${n.NOTIFICATION_TYPE === 'Claim_Approved' ? 'claim' : ''}">
+                  <i class="fa-solid fa-circle-check"></i> ${n.NOTIFICATION_TITLE || 'Lost Item Approved'}
+                </div>
+                <h4 style="font-size: 16px; font-weight: 700; color: #1e332a; margin-bottom: 4px;">
+                  ${n.ITEM_TITLE}
+                  ${isUnread ? '<span style="font-size: 10px; background: #c83b27; color:#fff; padding: 2px 7px; border-radius: 10px; margin-left: 6px; font-weight:700;">NEW</span>' : ''}
+                </h4>
+                <p style="font-size: 13px; color: #435948; margin-bottom: 8px; line-height: 1.5;">${n.MESSAGE}</p>
+                <div style="display: flex; gap: 16px; font-size: 12px; color: #798975; flex-wrap: wrap;">
+                  <span><i class="fa-solid fa-location-dot"></i> Location: <strong>${n.ITEM_LOCATION}</strong></span>
+                  <span><i class="fa-solid fa-layer-group"></i> Category: <strong>${n.ITEM_CATEGORY}</strong></span>
+                  <span><i class="fa-regular fa-clock"></i> Enqueued: <strong>${new Date(n.NOTIFIED_AT).toLocaleDateString()}</strong></span>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end; flex-shrink: 0;">
+                ${isUnread ? `
+                  <button onclick="markNotificationRead(${n.NOTIFICATION_ID})" class="button primary small" title="Acknowledge notification">
+                    <i class="fa-solid fa-check"></i> Acknowledge
+                  </button>
+                ` : `
+                  <span style="font-size: 11px; color: #62886a; font-weight: 600;"><i class="fa-solid fa-circle-check"></i> Acknowledged</span>
+                `}
+                <button onclick="deleteNotification(${n.NOTIFICATION_ID})" class="button light small" style="color: #925345;" title="Remove from queue">
+                  <i class="fa-solid fa-trash-can"></i> Dismiss
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        fetchNotificationCount();
+      } catch (err) {
+        console.error('Error loading notification queue:', err);
+      }
+    }
+
+    async function markNotificationRead(id) {
+      try {
+        await fetch(`/api/notifications/${id}/read`, { method: 'PUT' });
+        loadNotificationQueue();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function markAllNotificationsRead() {
+      if (!currentUser) return;
+      try {
+        await fetch(`/api/notifications/user/${currentUser.USER_ID}/read-all`, { method: 'PUT' });
+        loadNotificationQueue();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function deleteNotification(id) {
+      try {
+        await fetch(`/api/notifications/${id}`, { method: 'DELETE' });
+        loadNotificationQueue();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // ROLE-BASED NAVBAR DISPLAY: ONLY ADMINISTRATOR SEES ADMIN QUEUE; ALL OTHERS GET NOTIFICATION QUEUE
+    function updateNavigationRole() {
+      const isAdmin = currentUser && (currentUser.ROLE === 'Admin' || currentUser.ROLE === 'Administrator');
+      const adminNav = document.getElementById('nav-admin');
+      const notifNav = document.getElementById('nav-notifications');
+
+      if (adminNav) {
+        adminNav.style.display = isAdmin ? 'inline-flex' : 'none';
+      }
+      if (notifNav) {
+        notifNav.style.display = isAdmin ? 'none' : 'inline-flex';
+      }
+
+      if (currentUser && !isAdmin) {
+        fetchNotificationCount();
+      } else {
+        const badge = document.getElementById('notifBadge');
+        if (badge) badge.style.display = 'none';
+      }
+    }
+
+    function switchNav(view) {
+      const isAdmin = currentUser && (currentUser.ROLE === 'Admin' || currentUser.ROLE === 'Administrator');
+
+      if (view === 'admin') {
+        if (!isAdmin) {
+          alert('Access restricted to administrators only.');
+          switchNav('noticeboard');
+          return;
+        }
+      }
+
+      if ((view === 'dashboard' || view === 'notifications') && !currentUser) {
+        window.location.href = '/login';
+        return;
+      }
+
+      ['noticeboard', 'dashboard', 'admin', 'notifications'].forEach(v => {
         const el = document.getElementById(`view-${v}`);
         const btn = document.getElementById(`nav-${v}`);
         if (el) el.style.display = (v === view) ? 'block' : 'none';
         if (btn) btn.classList.toggle('active', v === view);
       });
+
       if (view === 'dashboard') renderDashboard();
       if (view === 'admin') loadAdminQueue();
+      if (view === 'notifications') loadNotificationQueue();
     }
 
     function setKindFilter(k) {
@@ -1242,6 +1644,7 @@
       await fetch('/api/items', { method: 'POST', body: formData });
       closeModal('reportModal');
       fetchItems();
+      fetchNotificationCount();
     }
 
     async function handleClaimSubmit(e) {
@@ -1281,6 +1684,7 @@
           currentUser = null;
         }
       }
+      updateNavigationRole();
       fetchItems();
     };
   </script>
