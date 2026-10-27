@@ -3,349 +3,1285 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CampusFirst Portal - Lost and Found</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>CampusFind — Lost & Found Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-gray-50 font-sans text-gray-800">
-  <nav class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-50">
-    <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('browse')">
-      <div class="bg-indigo-600 text-white rounded-lg px-3 py-1.5 font-bold tracking-wider">CampusFirst</div>
-      <span class="text-lg font-bold text-gray-800 hidden sm:inline">Lost & Found Portal</span>
-    </div>
-    <div class="flex items-center space-x-2 sm:space-x-4 text-sm font-medium">
-      <button onclick="switchTab('signin')" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-lg transition"><i class="fa-solid fa-user-circle mr-1"></i> Sign In</button>
-      <button onclick="switchTab('browse')" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-lg transition"><i class="fa-solid fa-compass mr-1"></i> Browse</button>
-      <button onclick="switchTab('admin')" class="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-lg transition"><i class="fa-solid fa-shield-halved mr-1"></i> Admin Queue</button>
-      <button onclick="switchTab('scout')" class="text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-lg transition font-semibold"><i class="fa-solid fa-robot mr-1"></i> Scout AI</button>
-      <button onclick="switchTab('report')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm"><i class="fa-solid fa-plus mr-1"></i> Report</button>
-    </div>
-  </nav>
+  <style>
+    :root {
+      --paper: #faf9f5;
+      --white: #ffffff;
+      --ink: #253d35;
+      --muted: #7b8279;
+      --green: #205c4d;
+      --green-dark: #174637;
+      --line: #e5e7df;
+      --gold: #c49b4a;
+      --soft: #eef1e8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, .brand { font-family: 'Manrope', sans-serif; }
+    button, input, select, textarea { font: inherit; }
+    button, a { cursor: pointer; text-decoration: none; color: inherit; transition: all 0.18s; }
+    
+    .container {
+      max-width: 1240px;
+      width: calc(100% - 64px);
+      margin-left: auto;
+      margin-right: auto;
+    }
 
-  <header class="relative bg-slate-900 text-white py-16 px-6 text-center overflow-hidden">
-    <div class="absolute inset-0 opacity-20 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80');"></div>
-    <div class="relative max-w-2xl mx-auto space-y-4">
-      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">Lost something? We'll help you find it.</h1>
-      <p class="text-gray-300 text-sm sm:text-base">Report lost or found items across campus, submit secure claims, and reconnect your items with their rightful owners.</p>
-    </div>
-    <div class="relative max-w-xl mx-auto grid grid-cols-3 gap-4 mt-10 pt-6 border-t border-gray-800 text-center">
-      <div>
-        <span id="statTotal" class="text-2xl sm:text-3xl font-bold text-indigo-400">0</span>
-        <p class="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider mt-1">Total Items</p>
+    /* HEADER */
+    .site-header {
+      height: 86px;
+      background: #fffefb;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+    .nav-wrap {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -1.1px;
+    }
+    .brand-mark {
+      width: 36px;
+      height: 38px;
+      background: var(--green);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: #fff9de;
+      margin-right: 10px;
+      transform: rotate(-4deg);
+      font-size: 16px;
+    }
+    .brand-dot { color: var(--gold); }
+    nav { display: flex; gap: 30px; align-items: center; height: 100%; }
+    nav button {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #777f76;
+      background: none;
+      border: 0;
+      padding: 10px 0;
+      position: relative;
+    }
+    nav button:hover, nav button.active { color: var(--green); font-weight: 700; }
+    nav button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+    }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+    
+    .button {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+    .button.primary { background: var(--green); color: white; border-color: var(--green); }
+    .button.primary:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .button.light { background: #fffefb; border-color: #dce0d4; color: #3a5145; }
+    .button.light:hover { background: #f0f3e9; }
+    .button.small { min-height: 38px; padding: 0 14px; font-size: 12px; }
+
+    /* ACCOUNT POPUP / PILL */
+    .account-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #f4f7ed;
+      border: 1px solid #d7e2ce;
+      border-radius: 24px;
+      padding: 4px 12px 4px 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #35583e;
+      position: relative;
+    }
+    .account-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #55724b;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .signout-btn {
+      color: #925345;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 6px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 0;
+      background: none;
+    }
+    .signout-btn:hover { background: #fcece8; }
+
+    /* SUBHEADER TICKER */
+    .top-note {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 15px;
+      font-size: 11.5px;
+      color: #6f7a68;
+      background: #f0f1e9;
+      border-bottom: 1px solid #e7ebe0;
+    }
+    .top-note strong { color: #4e5a48; font-weight: 700; }
+
+    /* HERO SECTION */
+    .hero {
+      display: grid;
+      grid-template-columns: 1.08fr 1fr;
+      align-items: center;
+      min-height: 520px;
+      padding: 50px 0 35px;
+      gap: 40px;
+    }
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 1.8px;
+      font-weight: 700;
+      color: #63816a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .green-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #5f8b61;
+      display: inline-block;
+    }
+    .hero h1 {
+      font-size: clamp(42px, 4.6vw, 60px);
+      line-height: 1.15;
+      font-weight: 700;
+      letter-spacing: -2.2px;
+      margin-bottom: 20px;
+    }
+    .hero h1 em {
+      font-family: Georgia, serif;
+      font-weight: 400;
+      font-style: italic;
+      color: #4f7254;
+      text-decoration: underline wavy #d4a956 2px;
+    }
+    .hero-copy p {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #6d7666;
+      max-width: 480px;
+      margin-bottom: 28px;
+    }
+    .hero-actions { display: flex; gap: 12px; margin-bottom: 28px; }
+    .community-proof {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11.5px;
+      color: #7b8372;
+    }
+    .mini-avatars { display: flex; }
+    .mini-avatars span {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #d8c9b4;
+      color: #4a3c2e;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      margin-left: -8px;
+      border: 2px solid var(--paper);
+    }
+    .mini-avatars span:first-child { margin-left: 0; background: #a6b4a3; color: #fff; }
+
+    /* FLOATING POLAROID CARDS IN HERO */
+    .hero-art {
+      height: 420px;
+      position: relative;
+      background: radial-gradient(ellipse at 50% 50%, #e8eddd 0, transparent 66%);
+    }
+    .floating-card {
+      position: absolute;
+      background: #fff;
+      border: 6px solid #fff;
+      box-shadow: 0 14px 34px rgba(45, 68, 48, 0.12);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .hero-bag {
+      width: 255px;
+      top: 35px;
+      left: 10%;
+      transform: rotate(-9deg);
+      z-index: 3;
+      padding: 16px 12px 10px;
+      background: #e5eadb;
+    }
+    .hero-bag-tag {
+      font-size: 9px;
+      font-weight: 700;
+      color: #475a43;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+    .hero-key {
+      width: 175px;
+      top: 95px;
+      right: 5%;
+      transform: rotate(12deg);
+      background: #f2e9d4;
+      padding: 12px;
+      z-index: 2;
+    }
+    .returned-pill {
+      position: absolute;
+      left: 20%;
+      bottom: 40px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 10px 26px rgba(40, 60, 42, 0.12);
+      transform: rotate(2deg);
+      z-index: 4;
+    }
+    .returned-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #e3ebd8;
+      color: #3b6b40;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+    }
+    .returned-pill strong { font-size: 12px; display: block; color: #1e332a; }
+    .returned-pill span { font-size: 10.5px; color: #788572; }
+
+    /* STATS ROW */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr) 1.2fr;
+      padding: 28px 0;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    .stats > div {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .stats > div:not(:first-child) {
+      border-left: 1px solid var(--line);
+      padding-left: 28px;
+    }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+    }
+    .stat-icon.green { background: #eaf0e2; color: #5a7d51; }
+    .stat-icon.peach { background: #f7e8dc; color: #b07858; }
+    .stat-icon.gold { background: #f5eed8; color: #b29046; }
+    .stats strong {
+      font-family: 'Manrope', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.1;
+      display: block;
+      color: #1b3329;
+    }
+    .stats span span { font-size: 11px; color: #7f8a77; font-weight: 500; }
+    .stats-message p { font-size: 12px; line-height: 1.6; color: #717d6b; }
+    .stats-message strong { font-size: 12px; color: #40573e; font-weight: 700; }
+
+    /* NOTICEBOARD SECTION */
+    .board-header { margin-bottom: 24px; }
+    .board-header h2 { font-size: 30px; font-weight: 700; letter-spacing: -1px; margin-bottom: 6px; }
+    .board-header p { font-size: 13px; color: #7a8573; }
+    
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      border: 1px solid #dde2d6;
+      border-radius: 12px;
+      padding: 8px 12px;
+      box-shadow: 0 4px 12px rgba(35, 60, 40, 0.03);
+      margin-bottom: 24px;
+    }
+    .search-input-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-left: 8px;
+      color: #7b8874;
+    }
+    .search-input-box input {
+      width: 100%;
+      border: 0;
+      background: none;
+      outline: none;
+      font-size: 13.5px;
+      color: var(--ink);
+    }
+    .search-category-select {
+      border: 0;
+      border-left: 1px solid var(--line);
+      padding-left: 14px;
+      outline: none;
+      background: none;
+      font-size: 12.5px;
+      color: #5c6855;
+      font-weight: 500;
+    }
+
+    /* FILTER TABS */
+    .filter-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 14px;
+      margin-bottom: 28px;
+    }
+    .filter-tabs { display: flex; gap: 20px; }
+    .filter-tabs button {
+      background: none;
+      border: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #87917f;
+      padding-bottom: 14px;
+      margin-bottom: -15px;
+      position: relative;
+    }
+    .filter-tabs button.active { color: var(--green); border-bottom: 2px solid var(--green); }
+    .filter-count {
+      background: #e8ece2;
+      color: #526749;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      margin-left: 6px;
+    }
+
+    /* ITEM CARDS GRID */
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 22px;
+      margin-bottom: 60px;
+    }
+    .item-card {
+      background: #ffffff;
+      border: 1px solid #e2e6dc;
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .item-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba(35, 60, 40, 0.1);
+    }
+    .card-art-box {
+      height: 195px;
+      width: 100%;
+      position: relative;
+      display: grid;
+      place-items: center;
+      background: #edf0e6;
+      overflow: hidden;
+    }
+    .card-art-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .card-badge {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 6px;
+      z-index: 2;
+    }
+    .card-badge.lost { color: #a44f3b; }
+    .card-badge.found { color: #2e6b3c; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    .card-content {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      justify-content: space-between;
+    }
+    .card-category-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #838e7c;
+      margin-bottom: 8px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e332a;
+      letter-spacing: -0.3px;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+    .card-location {
+      font-size: 12.5px;
+      color: #6a7764;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid #edf1e7;
+      padding-top: 12px;
+      font-size: 11px;
+      color: #8c9783;
+    }
+    .card-status-text { font-weight: 700; color: #517c56; }
+    .card-status-text.lost { color: #8e684a; }
+
+    /* DASHBOARD SECTION */
+    .dashboard-section { padding: 40px 0 60px; }
+    .dashboard-heading { margin-bottom: 30px; }
+    .dashboard-heading h2 { font-size: 34px; font-weight: 800; letter-spacing: -1.2px; margin-bottom: 6px; }
+    .dashboard-heading p { font-size: 14px; color: #7a8673; }
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 36px;
+    }
+    .dash-stat-box {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px 26px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .dash-stat-box strong { font-size: 32px; font-weight: 800; color: #1e332a; }
+    .dash-stat-box span { font-size: 12px; color: #7a8673; font-weight: 600; }
+
+    /* MODAL */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(18, 46, 39, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal {
+      background: #fffefb;
+      border-radius: 18px;
+      width: 540px;
+      max-width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 30px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+    }
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-head h3 { font-size: 22px; font-weight: 700; color: #1e332a; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; color: #5a6e53; margin-bottom: 6px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      border: 1px solid #d4ddcc;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 13.5px;
+      outline: none;
+      background: #fff;
+    }
+
+    @media (max-width: 992px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-art { display: none; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .item-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SITE HEADER -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <div class="brand" onclick="switchNav('noticeboard')">
+        <span class="brand-mark"><i class="fa-solid fa-magnifying-glass"></i></span>
+        Campus<span>Find</span><span class="brand-dot">.</span>
       </div>
-      <div>
-        <span id="statLost" class="text-2xl sm:text-3xl font-bold text-red-400">0</span>
-        <p class="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider mt-1">Lost</p>
-      </div>
-      <div>
-        <span id="statFound" class="text-2xl sm:text-3xl font-bold text-emerald-400">0</span>
-        <p class="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider mt-1">Found</p>
+
+      <nav>
+        <button id="nav-noticeboard" class="active" onclick="switchNav('noticeboard')">Noticeboard</button>
+        <button id="nav-dashboard" onclick="switchNav('dashboard')">My dashboard</button>
+        <button id="nav-admin" onclick="switchNav('admin')">Admin Queue</button>
+      </nav>
+
+      <div class="nav-right">
+        <button class="button primary small" onclick="openReportModal('Lost')">
+          <i class="fa-solid fa-plus"></i> Post a report
+        </button>
+        <div id="userAccountBox">
+          <a class="button light small" href="/login">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In / Register
+          </a>
+        </div>
       </div>
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto py-10 px-4 sm:px-6">
-    <!-- 1. Sign In Section -->
-    <section id="tab-signin" style="display: none;" class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
-      <div class="text-center">
-        <h2 class="text-2xl font-bold text-gray-900">Identity Service</h2>
-        <p class="text-sm text-gray-500 mt-1">Authenticate your campus credentials to proceed</p>
-      </div>
-      <form onsubmit="handleSignIn(event)" class="space-y-4">
+  <!-- SUBHEADER TICKER -->
+  <div class="top-note">
+    <span><strong>Little things. Big relief.</strong> A little help from your campus goes a long way. <i class="fa-regular fa-heart" style="color: #b58d45; margin-left: 4px;"></i></span>
+  </div>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="container">
+
+    <!-- 1. NOTICEBOARD VIEW -->
+    <div id="view-noticeboard">
+      
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="green-dot"></span> YOUR CAMPUS. YOUR COMMUNITY.</div>
+          <h1>Good things find<br>their way <em>back.</em></h1>
+          <p>A missing notebook. A familiar set of keys.<br>Let’s get the things that matter back to their people.</p>
+          <div class="hero-actions">
+            <button class="button primary" onclick="openReportModal('Lost')">
+              <i class="fa-solid fa-magnifying-glass"></i> I lost something <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 11px; margin-left: 4px;"></i>
+            </button>
+            <button class="button light" onclick="openReportModal('Found')">
+              <i class="fa-solid fa-plus"></i> I found something
+            </button>
+          </div>
+          <div class="community-proof">
+            <div class="mini-avatars">
+              <span>A</span><span>M</span><span>R</span><span>♥</span>
+            </div>
+            <div>
+              <strong>A small act of kindness.</strong><br>A campus full of possibilities.
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-art">
+          <div class="floating-card hero-bag">
+            <div class="hero-bag-tag"><span class="green-dot"></span> FOUND ON CAMPUS</div>
+            <!-- EXACT HIGH-FIDELITY VECTOR BACKPACK FROM CAMPUSFIND -->
+            <svg viewBox="0 0 320 220" style="width: 100%; height: 165px;" fill="none">
+              <defs>
+                <filter id="shadow-bag"><feDropShadow dx="0" dy="9" stdDeviation="8" flood-opacity=".12"/></filter>
+                <linearGradient id="green-bag" x1="80" y1="40" x2="230" y2="190" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#698a6c"/><stop offset="1" stop-color="#315b48"/>
+                </linearGradient>
+              </defs>
+              <ellipse cx="160" cy="190" rx="74" ry="9" fill="#263e32" opacity=".07"/>
+              <g transform="rotate(-10 160 110)" filter="url(#shadow-bag)">
+                <path d="M143 50v-9c0-22 37-22 37 0v9" stroke="#304b38" stroke-width="10"/>
+                <path d="M108 80c-23 5-29 74-7 89M212 80c23 5 29 74 7 89" stroke="#314f3b" stroke-width="12"/>
+                <path d="M103 75q0-30 35-30h43q35 0 35 30v99q0 16-16 16h-81q-16 0-16-16Z" fill="url(#green-bag)"/>
+                <path d="M109 89h101" stroke="#a9b899" stroke-width="2"/>
+                <rect x="118" y="112" width="83" height="60" rx="15" fill="#54785b" stroke="#769275"/>
+                <path d="M125 126h69" stroke="#b1bf9c" stroke-width="2"/>
+                <path d="M192 127v9" stroke="#d9c58c" stroke-width="4"/>
+                <rect x="147" y="68" width="28" height="12" rx="2" fill="#ccb98b"/>
+                <path d="M143 173h33" stroke="#9caf91" opacity=".5"/>
+              </g>
+            </svg>
+          </div>
+          <div class="floating-card hero-key">
+            <!-- EXACT HIGH-FIDELITY VECTOR KEYS & SUNFLOWER CHARM -->
+            <svg viewBox="0 0 320 220" style="width: 100%; height: 135px;" fill="none">
+              <ellipse cx="160" cy="190" rx="74" ry="9" fill="#263e32" opacity=".07"/>
+              <g transform="rotate(-18 160 110)">
+                <circle cx="141" cy="86" r="28" stroke="#a8b1b5" stroke-width="6"/>
+                <path d="m130 110-15 58-10 3-3 14 17 5 9-13-6-7 14-58" fill="#d6bd7f"/>
+                <path d="m148 113 8 67 10 3 5 12 15-9-5-11-8 2-13-65" fill="#aab4b8"/>
+                <path d="m165 88 33 38" stroke="#9ca7a6" stroke-width="4"/>
+                <g transform="translate(208 136)">
+                  <g fill="#e9bc48">
+                    <ellipse cy="-18" rx="9" ry="15" transform="rotate(0)"/>
+                    <ellipse cy="-18" rx="9" ry="15" transform="rotate(45)"/>
+                    <ellipse cy="-18" rx="9" ry="15" transform="rotate(90)"/>
+                    <ellipse cy="-18" rx="9" ry="15" transform="rotate(135)"/>
+                    <ellipse cy="-18" rx="9" ry="15" transform="rotate(180)"/>
+                    <ellipse cy="-18" rx="9" ry="15" transform="rotate(225)"/>
+                    <ellipse cy="-18" rx="9" ry="15" transform="rotate(270)"/>
+                    <ellipse cy="-18" rx="9" ry="15" transform="rotate(315)"/>
+                  </g>
+                  <circle r="13" fill="#72543c"/>
+                  <circle r="8" fill="#886344"/>
+                </g>
+              </g>
+            </svg>
+          </div>
+          <div class="returned-pill">
+            <div class="returned-icon"><i class="fa-solid fa-check"></i></div>
+            <div>
+              <strong>Back where it belongs.</strong>
+              <span>That’s what community does. ♡</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4-COLUMN STATS BAR -->
+      <section class="stats">
         <div>
-          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Campus Email</label>
-          <input type="email" id="signInEmail" placeholder="student@campus.edu" class="border border-gray-300 p-3 w-full rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm" required>
+          <div class="stat-icon green"><i class="fa-solid fa-box-archive"></i></div>
+          <span><strong id="statFound">0</strong><span>Found & waiting</span></span>
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Full Name</label>
-          <input type="text" id="signInName" placeholder="Aniruddha Chaudhury" class="border border-gray-300 p-3 w-full rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm" required>
+          <div class="stat-icon peach"><i class="fa-solid fa-magnifying-glass"></i></div>
+          <span><strong id="statLost">0</strong><span>Open lost reports</span></span>
         </div>
         <div>
-          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Select Role</label>
-          <select id="signInRole" class="border border-gray-300 p-3 w-full rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white">
-            <option value="Student">Student</option>
-            <option value="Staff">Staff</option>
-            <option value="Admin">Administrator</option>
+          <div class="stat-icon gold"><i class="fa-solid fa-handshake"></i></div>
+          <span><strong id="statResolved">0</strong><span>Cases resolved</span></span>
+        </div>
+        <div class="stats-message">
+          <i class="fa-solid fa-shield-halved" style="font-size: 26px; color: #63855a;"></i>
+          <p>A safer way to reconnect.<br><strong>Every claim is verified.</strong></p>
+        </div>
+      </section>
+
+      <!-- NOTICEBOARD -->
+      <section>
+        <div class="board-header">
+          <div class="eyebrow"><span class="green-dot"></span> THE CAMPUS NOTICEBOARD</div>
+          <h2>Campus noticeboard</h2>
+          <p>Search active reports by item, category, location or date.</p>
+        </div>
+
+        <!-- SEARCH BAR -->
+        <div class="search-bar">
+          <div class="search-input-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="boardSearch" placeholder="What are you looking for? A bag, keys, headphones…" oninput="filterItems()">
+          </div>
+          <select id="boardCategory" class="search-category-select" onchange="filterItems()">
+            <option value="">All categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Bags & backpacks">Bags & backpacks</option>
+            <option value="Books">Books & stationery</option>
+            <option value="Keys & accessories">Keys & accessories</option>
+            <option value="Bottles & drinkware">Bottles & drinkware</option>
+            <option value="Other">Other</option>
           </select>
         </div>
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium p-3 rounded-xl w-full transition shadow-sm">Sign In</button>
-      </form>
-      <div id="authStatus" class="text-center text-sm font-semibold text-emerald-600"></div>
-    </section>
 
-    <!-- 2. Browse Reports Section -->
-    <section id="tab-browse" class="space-y-6">
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="text-xl font-bold text-gray-800">Recent Items</h2>
-        <div class="flex w-full sm:w-auto gap-2">
-          <input type="text" id="searchInput" placeholder="Search item title or description..." class="border border-gray-300 px-4 py-2 rounded-xl text-sm w-full sm:w-72 focus:ring-2 focus:ring-indigo-500 outline-none">
-          <button onclick="loadItems()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl text-sm font-medium transition">Search</button>
+        <!-- TABS -->
+        <div class="filter-row">
+          <div class="filter-tabs">
+            <button id="tab-all" class="active" onclick="setKindFilter('all')">All items <span class="filter-count" id="countAll">0</span></button>
+            <button id="tab-found" onclick="setKindFilter('Found')">Found items <span class="filter-count" id="countFound">0</span></button>
+            <button id="tab-lost" onclick="setKindFilter('Lost')">Lost items <span class="filter-count" id="countLost">0</span></button>
+          </div>
+        </div>
+
+        <!-- ITEM CARDS GRID -->
+        <div id="noticeboardGrid" class="item-grid"></div>
+      </section>
+    </div>
+
+    <!-- 2. MY DASHBOARD VIEW (DEDICATED SECTION - ONLY LOGGED IN USER ITEMS) -->
+    <div id="view-dashboard" style="display: none;" class="dashboard-section">
+      <div class="dashboard-heading">
+        <div class="eyebrow"><span class="green-dot"></span> STUDENT SERVICES · MY DASHBOARD</div>
+        <h2 id="dashGreeting">Hi there.</h2>
+        <p>Keep track of the things you’ve shared and the claims you’ve made.</p>
+      </div>
+
+      <div class="dashboard-stats">
+        <div class="dash-stat-box">
+          <strong id="userReportCount">0</strong>
+          <span>Your reports</span>
+        </div>
+        <div class="dash-stat-box">
+          <strong id="userClaimCount">0</strong>
+          <span>Claims in review</span>
+        </div>
+        <div class="dash-stat-box">
+          <i class="fa-solid fa-shield-halved" style="font-size: 26px; color: #527a48;"></i>
+          <span id="userRoleBadge">Student account</span>
         </div>
       </div>
-      <div id="itemsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
-    </section>
 
-    <!-- 3. Post Item Report Section -->
-    <section id="tab-report" style="display: none;" class="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-100 space-y-6">
-      <div>
-        <h2 class="text-2xl font-bold text-gray-900">Post Lost / Found Report</h2>
-        <p class="text-sm text-gray-500 mt-1">Provide accurate details to help locate or identify the item.</p>
+      <h3 style="font-size: 20px; font-weight: 700; margin-bottom: 18px;">Your reports</h3>
+      <div id="userReportsGrid" class="item-grid"></div>
+
+      <h3 style="font-size: 20px; font-weight: 700; margin: 40px 0 18px;">Your ownership claims</h3>
+      <div id="userClaimsList"></div>
+    </div>
+
+    <!-- 3. ADMIN QUEUE VIEW -->
+    <div id="view-admin" style="display: none;" class="dashboard-section">
+      <div class="dashboard-heading">
+        <div class="eyebrow"><span class="green-dot"></span> ADMINISTRATOR WORKSPACE</div>
+        <h2>Administrator Review Queue</h2>
+        <p>Verify ownership evidence, coordinate handovers, and close resolved cases.</p>
       </div>
-      <form id="reportForm" onsubmit="submitReport(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Item Title</label>
-          <input type="text" id="title" placeholder="e.g. Wireless Headphones / MacBook" class="border border-gray-300 p-3 w-full rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500" required>
+      <div id="adminQueueList"></div>
+    </div>
+
+  </main>
+
+  <!-- POST REPORT MODAL -->
+  <div id="reportModal" class="overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="reportModalTitle">Post an item report</h3>
+        <button onclick="closeModal('reportModal')" style="border:0; background:none; font-size: 18px; color:#888;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form onsubmit="handleCreateReport(event)">
+        <input type="hidden" id="reportTypeInput" value="Lost">
+        <div class="form-group">
+          <label>What's the item?</label>
+          <input type="text" id="reportTitle" placeholder="e.g. Green canvas backpack / Sony headphones" required>
         </div>
-        <div>
-          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Description</label>
-          <textarea id="description" placeholder="Include color, brand, distinct marks..." class="border border-gray-300 p-3 w-full rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 h-24" required></textarea>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Category</label>
-            <select id="category" class="border border-gray-300 p-3 w-full rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label>Category</label>
+            <select id="reportCategory" required>
+              <option value="Bags & backpacks">Bags & backpacks</option>
               <option value="Electronics">Electronics</option>
-              <option value="Books">Books</option>
-              <option value="Accessories">Accessories</option>
+              <option value="Books">Books & stationery</option>
+              <option value="Keys & accessories">Keys & accessories</option>
+              <option value="Bottles & drinkware">Bottles & drinkware</option>
               <option value="Other">Other</option>
             </select>
           </div>
-          <div>
-            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Report Type</label>
-            <select id="type" class="border border-gray-300 p-3 w-full rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-indigo-500">
-              <option value="Lost">Lost</option>
-              <option value="Found">Found</option>
-            </select>
+          <div class="form-group">
+            <label>Campus location</label>
+            <input type="text" id="reportLocation" placeholder="e.g. Central Library" required>
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Location</label>
-            <input type="text" id="location" placeholder="e.g. Central Library" class="border border-gray-300 p-3 w-full rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500" required>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Date</label>
-            <input type="date" id="dateEvent" class="border border-gray-300 p-3 w-full rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500" required>
-          </div>
+        <div class="form-group">
+          <label>Date event</label>
+          <input type="date" id="reportDate" required>
         </div>
-        <div>
-          <label class="block text-xs font-semibold uppercase text-gray-600 mb-1">Upload Photo (Optional)</label>
-          <input type="file" id="imageFile" class="border border-gray-300 p-2.5 w-full rounded-xl text-sm bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+        <div class="form-group">
+          <label>Description (Appearance & details)</label>
+          <textarea id="reportDescription" rows="3" placeholder="Color, brand, where it was last seen..." required></textarea>
         </div>
-        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium p-3 rounded-xl w-full transition shadow-sm">Publish Report</button>
+        <div class="form-group">
+          <label>Upload item photo (Optional)</label>
+          <input type="file" id="reportImage" accept="image/*">
+        </div>
+        <button type="submit" class="button primary" style="width: 100%; margin-top: 10px;">Publish Report</button>
       </form>
-    </section>
+    </div>
+  </div>
 
-    <!-- 4. Admin Review Queue Section -->
-    <section id="tab-admin" style="display: none;" class="space-y-6">
-      <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="text-xl font-bold text-gray-800">Administrator Review Queue</h2>
-        <p class="text-sm text-gray-500 mt-1">Verify student/staff ownership claims and resolve cases.</p>
+  <!-- CLAIM MODAL -->
+  <div id="claimModal" class="overlay" style="display: none;">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>This might be mine</h3>
+        <button onclick="closeModal('claimModal')" style="border:0; background:none; font-size: 18px; color:#888;"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div id="adminQueue" class="space-y-4"></div>
-    </section>
-
-    <!-- 5. Scout AI Chat Section -->
-    <section id="tab-scout" style="display: none;" class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[550px]">
-      <div class="bg-indigo-900 text-white p-4 flex items-center space-x-3">
-        <div class="bg-indigo-700 p-2 rounded-xl"><i class="fa-solid fa-robot text-lg"></i></div>
-        <div>
-          <h2 class="font-bold text-base">Scout AI Assistant</h2>
-          <p class="text-xs text-indigo-200">Ask about open campus items or your claim statuses</p>
+      <form onsubmit="handleClaimSubmit(event)">
+        <input type="hidden" id="claimItemId">
+        <div class="form-group">
+          <label>Private ownership evidence</label>
+          <textarea id="claimProof" rows="4" placeholder="Describe a secret detail only the owner would know (e.g. serial number, initials inside pouch, lock code)..." required></textarea>
         </div>
-      </div>
-      <div id="chatHistory" class="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50 text-sm">
-        <div class="flex items-start space-x-2">
-          <div class="bg-indigo-600 text-white rounded-full h-7 w-7 flex items-center justify-center text-xs font-bold">🤖</div>
-          <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200 max-w-[80%] text-gray-700">
-            Hello! I am Scout, your campus lost-and-found assistant. How can I help you today?
-          </div>
-        </div>
-      </div>
-      <div class="p-4 bg-white border-t border-gray-200 flex gap-2">
-        <input type="text" id="chatInput" placeholder="Type a message to Scout..." class="border border-gray-300 p-3 rounded-xl w-full text-sm outline-none focus:ring-2 focus:ring-indigo-500" onkeypress="if(event.key === 'Enter') sendScoutMessage()">
-        <button onclick="sendScoutMessage()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl transition text-sm font-medium"><i class="fa-solid fa-paper-plane"></i></button>
-      </div>
-    </section>
-  </main>
+        <p style="font-size: 11px; color: #7f8a76; margin-bottom: 16px;">
+          <i class="fa-solid fa-lock"></i> Only administrators can review this evidence.
+        </p>
+        <button type="submit" class="button primary" style="width: 100%;">Submit Ownership Claim</button>
+      </form>
+    </div>
+  </div>
 
   <script>
+    let allItems = [];
+    let currentKindFilter = 'all';
     let currentUser = null;
 
-    function switchTab(tab) {
-      ['signin', 'browse', 'report', 'admin', 'scout'].forEach(t => {
-        const el = document.getElementById(`tab-${t}`);
-        if (el) el.style.display = 'none';
-      });
-      const activeEl = document.getElementById(`tab-${tab}`);
-      if (activeEl) {
-        if (tab === 'scout') {
-          activeEl.style.display = 'flex';
-        } else {
-          activeEl.style.display = 'block';
-        }
+    // HIGH-FIDELITY VECTOR ARTWORKS SOURCED FROM CAMPUSFIND
+    function getVectorArt(title, category) {
+      const t = (title + ' ' + category).toLowerCase();
+      if (t.includes('bag') || t.includes('backpack')) {
+        return `
+          <svg viewBox="0 0 320 220" style="width:100%;height:155px" fill="none">
+            <ellipse cx="160" cy="190" rx="74" ry="9" fill="#263e32" opacity=".07"/>
+            <g transform="rotate(-10 160 110)">
+              <path d="M143 50v-9c0-22 37-22 37 0v9" stroke="#304b38" stroke-width="10"/>
+              <path d="M108 80c-23 5-29 74-7 89M212 80c23 5 29 74 7 89" stroke="#314f3b" stroke-width="12"/>
+              <path d="M103 75q0-30 35-30h43q35 0 35 30v99q0 16-16 16h-81q-16 0-16-16Z" fill="#3f6c52"/>
+              <path d="M109 89h101" stroke="#a9b899" stroke-width="2"/>
+              <rect x="118" y="112" width="83" height="60" rx="15" fill="#54785b" stroke="#769275"/>
+              <path d="M125 126h69" stroke="#b1bf9c" stroke-width="2"/>
+              <path d="M192 127v9" stroke="#d9c58c" stroke-width="4"/>
+              <rect x="147" y="68" width="28" height="12" rx="2" fill="#ccb98b"/>
+              <path d="M143 173h33" stroke="#9caf91" opacity=".5"/>
+            </g>
+          </svg>
+        `;
       }
-      if (tab === 'browse') loadItems();
-      if (tab === 'admin') loadAdminQueue();
+      if (t.includes('headphone')) {
+        return `
+          <svg viewBox="0 0 320 220" style="width:100%;height:155px" fill="none">
+            <ellipse cx="160" cy="190" rx="74" ry="9" fill="#263e32" opacity=".07"/>
+            <g transform="rotate(13 160 110)">
+              <path d="M98 130V95a62 62 0 0 1 124 0v35" stroke="#aab2b7" stroke-width="18"/>
+              <path d="M101 104V94a59 59 0 0 1 118 0v10" stroke="#e3e7e9" stroke-width="11"/>
+              <rect x="86" y="111" width="35" height="69" rx="17" fill="#a3adb2"/>
+              <rect x="94" y="113" width="29" height="65" rx="14" fill="#dde2e3"/>
+              <rect x="199" y="111" width="35" height="69" rx="17" fill="#a3adb2"/>
+              <rect x="196" y="113" width="29" height="65" rx="14" fill="#dce1e2"/>
+              <path d="M110 123v44m99-44v44" stroke="white" stroke-opacity=".5" stroke-width="3"/>
+            </g>
+          </svg>
+        `;
+      }
+      if (t.includes('key')) {
+        return `
+          <svg viewBox="0 0 320 220" style="width:100%;height:155px" fill="none">
+            <ellipse cx="160" cy="190" rx="74" ry="9" fill="#263e32" opacity=".07"/>
+            <g transform="rotate(-18 160 110)">
+              <circle cx="141" cy="86" r="28" stroke="#a8b1b5" stroke-width="6"/>
+              <path d="m130 110-15 58-10 3-3 14 17 5 9-13-6-7 14-58" fill="#d6bd7f"/>
+              <path d="m148 113 8 67 10 3 5 12 15-9-5-11-8 2-13-65" fill="#aab4b8"/>
+              <path d="m165 88 33 38" stroke="#9ca7a6" stroke-width="4"/>
+              <g transform="translate(208 136)">
+                <g fill="#e9bc48">
+                  <ellipse cy="-18" rx="9" ry="15" transform="rotate(0)"/>
+                  <ellipse cy="-18" rx="9" ry="15" transform="rotate(45)"/>
+                  <ellipse cy="-18" rx="9" ry="15" transform="rotate(90)"/>
+                  <ellipse cy="-18" rx="9" ry="15" transform="rotate(135)"/>
+                  <ellipse cy="-18" rx="9" ry="15" transform="rotate(180)"/>
+                  <ellipse cy="-18" rx="9" ry="15" transform="rotate(225)"/>
+                  <ellipse cy="-18" rx="9" ry="15" transform="rotate(270)"/>
+                  <ellipse cy="-18" rx="9" ry="15" transform="rotate(315)"/>
+                </g>
+                <circle r="13" fill="#72543c"/>
+                <circle r="8" fill="#886344"/>
+              </g>
+            </g>
+          </svg>
+        `;
+      }
+      if (t.includes('bottle')) {
+        return `
+          <svg viewBox="0 0 320 220" style="width:100%;height:155px" fill="none">
+            <ellipse cx="160" cy="190" rx="74" ry="9" fill="#263e32" opacity=".07"/>
+            <g transform="rotate(12 160 110)">
+              <rect x="137" y="31" width="46" height="26" rx="8" fill="#263f53"/>
+              <rect x="132" y="50" width="56" height="14" rx="4" fill="#536a7b"/>
+              <path d="M133 62q-10 8-10 23v87q0 16 16 16h42q16 0 16-16V85q0-15-10-23Z" fill="#36566f"/>
+              <path d="M134 82v88" stroke="#668198" stroke-width="5" stroke-linecap="round"/>
+              <circle cx="161" cy="133" r="19" fill="#d7dfce"/>
+              <path d="m145 142 14-23 8 13 6-7 10 17" fill="#54765e"/>
+              <path d="m156 124 3-5 4 6" fill="#f5f2df"/>
+            </g>
+          </svg>
+        `;
+      }
+      if (t.includes('book') || t.includes('notebook')) {
+        return `
+          <svg viewBox="0 0 320 220" style="width:100%;height:155px" fill="none">
+            <ellipse cx="160" cy="190" rx="74" ry="9" fill="#263e32" opacity=".07"/>
+            <g transform="rotate(-16 160 110)">
+              <rect x="105" y="49" width="118" height="144" rx="7" fill="#bbaa85"/>
+              <rect x="102" y="42" width="118" height="144" rx="7" fill="#ece2c4"/>
+              <path d="M111 45v135" stroke="#cdbf9d"/>
+              <path d="M199 43v143" stroke="#4f7058" stroke-width="8"/>
+              <rect x="126" y="76" width="55" height="35" rx="2" stroke="#b9ac88"/>
+              <path d="M137 88h32m-25 9h18" stroke="#a39778"/>
+              <path d="M154 186v13l7-4 6 4v-13" fill="#6c8a70"/>
+            </g>
+          </svg>
+        `;
+      }
+      return `
+        <svg viewBox="0 0 320 220" style="width:100%;height:155px" fill="none">
+          <ellipse cx="160" cy="190" rx="74" ry="9" fill="#263e32" opacity=".07"/>
+          <g>
+            <rect x="106" y="65" width="110" height="115" rx="18" fill="#c8b89b"/>
+            <path d="m106 83 55 23 55-23M161 106v74" stroke="#aa9573" stroke-width="3"/>
+            <path d="m135 67 54 24" stroke="#eee3ce" stroke-width="17"/>
+          </g>
+        </svg>
+      `;
     }
 
-    async function handleSignIn(e) {
-      e.preventDefault();
-      const email = document.getElementById('signInEmail').value;
-      const full_name = document.getElementById('signInName').value;
-      const role = document.getElementById('signInRole').value;
-      const res = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ EMAIL: email, FULL_NAME: full_name, ROLE: role })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        currentUser = data.user;
-        document.getElementById('authStatus').innerText = `Successfully signed in as ${currentUser.FULL_NAME || currentUser.full_name} (${currentUser.ROLE || currentUser.role})!`;
-        setTimeout(() => switchTab('browse'), 1000);
-      } else {
-        alert(data.error);
+    async function fetchItems() {
+      try {
+        const res = await fetch('/api/items');
+        allItems = await res.json();
+        updateStats();
+        renderNoticeboard();
+        if (currentUser) renderDashboard();
+      } catch (err) {
+        console.error('Fetch error:', err);
       }
     }
 
-    async function loadItems() {
-      const search = document.getElementById('searchInput').value;
-      const res = await fetch(`/api/items?search=${search || ''}`);
-      const items = await res.json();
-      let total = items.length;
-      let lost = items.filter(i => (i.TYPE || i.type || '').toLowerCase() === 'lost').length;
-      let found = items.filter(i => (i.TYPE || i.type || '').toLowerCase() === 'found').length;
-      document.getElementById('statTotal').innerText = total;
-      document.getElementById('statLost').innerText = lost;
+    function updateStats() {
+      const found = allItems.filter(i => (i.TYPE || '').toLowerCase() === 'found').length;
+      const lost = allItems.filter(i => (i.TYPE || '').toLowerCase() === 'lost').length;
+      const closed = allItems.filter(i => (i.STATUS || '').toLowerCase() === 'closed').length;
       document.getElementById('statFound').innerText = found;
-      const grid = document.getElementById('itemsGrid');
-      if(items.length === 0) {
-        grid.innerHTML = `<div class="col-span-full text-center py-12 text-gray-400">No records found matching your query.</div>`;
+      document.getElementById('statLost').innerText = lost;
+      document.getElementById('statResolved').innerText = closed;
+      document.getElementById('countAll').innerText = allItems.length;
+      document.getElementById('countFound').innerText = found;
+      document.getElementById('countLost').innerText = lost;
+    }
+
+    function renderNoticeboard() {
+      const query = (document.getElementById('boardSearch').value || '').toLowerCase();
+      const category = document.getElementById('boardCategory').value;
+      
+      const filtered = allItems.filter(i => {
+        const matchesKind = (currentKindFilter === 'all') || (i.TYPE.toLowerCase() === currentKindFilter.toLowerCase());
+        const matchesCat = !category || (i.CATEGORY.toLowerCase() === category.toLowerCase());
+        const matchesQuery = !query || ((i.TITLE + ' ' + i.DESCRIPTION + ' ' + i.LOCATION).toLowerCase().includes(query));
+        return matchesKind && matchesCat && matchesQuery;
+      });
+
+      const container = document.getElementById('noticeboardGrid');
+      if (!filtered.length) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: #889481;">No campus reports matching your criteria.</div>`;
         return;
       }
-      grid.innerHTML = items.map(item => {
-        const typeVal = item.TYPE || item.type || 'Lost';
-        const statusVal = item.STATUS || item.status || 'Open';
-        const isLost = typeVal.toLowerCase() === 'lost';
-        let statusBadgeColor = 'bg-blue-50 text-blue-600';
-        if (statusVal === 'Claimed') statusBadgeColor = 'bg-yellow-50 text-yellow-600';
-        if (statusVal === 'Matched') statusBadgeColor = 'bg-purple-50 text-purple-600';
-        if (statusVal === 'Closed') statusBadgeColor = 'bg-gray-100 text-gray-600';
+
+      container.innerHTML = filtered.map(item => {
+        const isLost = (item.TYPE || '').toLowerCase() === 'lost';
+        const imageHtml = item.IMAGE_URL 
+          ? `<img src="${item.IMAGE_URL}" alt="${item.TITLE}">` 
+          : getVectorArt(item.TITLE, item.CATEGORY);
+
         return `
-          <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col justify-between hover:shadow-md transition">
-            <div>
-              ${item.IMAGE_URL || item.image_url ? `<img src="${item.IMAGE_URL || item.image_url}" class="h-44 object-cover w-full">` : `<div class="h-32 bg-gray-100 flex items-center justify-center text-gray-400 text-xs"><i class="fa-solid fa-image text-2xl"></i></div>`}
-              <div class="p-4 space-y-2">
-                <div class="flex justify-between items-center">
-                  <span class="text-[10px] uppercase px-2.5 py-1 rounded-full font-bold ${isLost ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600'}">${typeVal}</span>
-                  <span class="text-[10px] uppercase px-2.5 py-1 rounded-full font-bold ${statusBadgeColor}">${statusVal}</span>
-                </div>
-                <h3 class="font-bold text-gray-900 text-base line-clamp-1">${item.TITLE || item.title}</h3>
-                <p class="text-gray-600 text-xs line-clamp-2">${item.DESCRIPTION || item.description}</p>
-                <p class="text-xs text-gray-400 pt-1"><i class="fa-solid fa-location-dot mr-1 text-gray-400"></i>${item.LOCATION || item.location} | ${item.DATE_EVENT || item.date_event || ''}</p>
-              </div>
+          <div class="item-card">
+            <div class="card-art-box">
+              <span class="card-badge ${isLost ? 'lost' : 'found'}">
+                <span class="badge-dot"></span> ${isLost ? 'Lost item' : 'Found item'}
+              </span>
+              ${imageHtml}
             </div>
-            <div class="p-4 pt-0">
-              <button onclick="submitClaim(${item.ITEM_ID || item.item_id})" class="w-full bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white font-medium text-xs py-2.5 rounded-xl transition">Claim Item</button>
+            <div class="card-content">
+              <div>
+                <div class="card-category-row">
+                  <span>${item.CATEGORY || 'General'}</span>
+                  <span style="font-size: 9.5px; background: #eef2e7; padding: 2px 6px; border-radius: 4px; color: #627557;">Verified</span>
+                </div>
+                <h3 class="card-title">${item.TITLE}</h3>
+                <p class="card-location"><i class="fa-solid fa-location-dot" style="font-size: 11px;"></i> ${item.LOCATION}</p>
+              </div>
+              <div class="card-footer">
+                <span>${item.DATE_EVENT || ''}</span>
+                <span class="card-status-text ${isLost ? 'lost' : ''}">${isLost ? 'Looking for item' : 'Looking for owner'}</span>
+              </div>
+              <button onclick="openClaimModal(${item.ITEM_ID})" class="button light small" style="margin-top: 14px; width: 100%;">
+                <i class="fa-solid fa-hand-holding-hand"></i> This might be mine
+              </button>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    async function submitReport(e) {
-      e.preventDefault();
-      if (!currentUser) { alert('Please sign in first!'); switchTab('signin'); return; }
-      const formData = new FormData();
-      formData.append('USER_ID', currentUser.USER_ID || currentUser.user_id);
-      formData.append('TITLE', document.getElementById('title').value);
-      formData.append('DESCRIPTION', document.getElementById('description').value);
-      formData.append('CATEGORY', document.getElementById('category').value);
-      formData.append('LOCATION', document.getElementById('location').value);
-      formData.append('DATE_EVENT', document.getElementById('dateEvent').value);
-      formData.append('TYPE', document.getElementById('type').value);
-      const img = document.getElementById('imageFile').files[0];
-      if (img) formData.append('image', img);
-      const res = await fetch('/api/items', { method: 'POST', body: formData });
-      if (res.ok) { alert('Report posted successfully!'); document.getElementById('reportForm').reset(); switchTab('browse'); }
+    // DEDICATED DASHBOARD: SHOWS ONLY LOGGED IN USER ITEMS & CLAIMS
+    function renderDashboard() {
+      if (!currentUser) {
+        window.location.href = '/login';
+        return;
+      }
+      document.getElementById('dashGreeting').innerText = `Hi, ${currentUser.FULL_NAME.split(' ')[0]}.`;
+      document.getElementById('userRoleBadge').innerText = `${currentUser.ROLE} account`;
+
+      // Filter only user's own reports ("not all included"!)
+      const myReports = allItems.filter(i => Number(i.USER_ID) === Number(currentUser.USER_ID));
+      document.getElementById('userReportCount').innerText = myReports.length;
+
+      const reportsContainer = document.getElementById('userReportsGrid');
+      if (!myReports.length) {
+        reportsContainer.innerHTML = `<div style="grid-column: 1/-1; padding: 30px; background: #fff; border: 1px dashed var(--line); border-radius: 12px; text-align: center; color: #828e7c;">You haven't posted any items yet.</div>`;
+      } else {
+        reportsContainer.innerHTML = myReports.map(item => `
+          <div class="item-card">
+            <div class="card-art-box">${item.IMAGE_URL ? `<img src="${item.IMAGE_URL}">` : getVectorArt(item.TITLE, item.CATEGORY)}</div>
+            <div class="card-content">
+              <h3 class="card-title">${item.TITLE}</h3>
+              <p class="card-location"><i class="fa-solid fa-location-dot"></i> ${item.LOCATION}</p>
+              <div class="card-footer">
+                <span>Status: <strong>${item.STATUS}</strong></span>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      fetchUserClaims();
     }
 
-    async function submitClaim(itemId) {
-      if (!currentUser) { alert('Please sign in first!'); switchTab('signin'); return; }
-      const proof = prompt("Provide private ownership evidence description (e.g. serial number, unique marks):");
-      if (!proof) return;
-      const res = await fetch('/api/claims', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ITEM_ID: itemId, CLAIMANT_ID: currentUser.USER_ID || currentUser.user_id, PROOF_DESCRIPTION: proof })
-      });
-      if (res.ok) { alert('Claim submitted successfully for review.'); loadItems(); }
+    async function fetchUserClaims() {
+      try {
+        const res = await fetch('/api/claims/queue');
+        const queue = await res.json();
+        const myClaims = queue.filter(c => Number(c.CLAIMANT_ID) === Number(currentUser.USER_ID));
+        document.getElementById('userClaimCount').innerText = myClaims.length;
+
+        const listContainer = document.getElementById('userClaimsList');
+        if (!myClaims.length) {
+          listContainer.innerHTML = `<div style="padding: 24px; background: #fff; border: 1px dashed var(--line); border-radius: 12px; text-align: center; color: #828e7c;">You have no active claims submitted.</div>`;
+        } else {
+          listContainer.innerHTML = myClaims.map(c => `
+            <div style="background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="font-size: 15px; color: #1e332a;">${c.ITEM_TITLE}</strong>
+                <p style="font-size: 12px; color: #6b7764; margin-top: 4px;">Proof: ${c.PROOF_DESCRIPTION}</p>
+              </div>
+              <span style="background: #f7efdc; color: #9c7a35; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px;">${c.CLAIM_STATUS}</span>
+            </div>
+          `).join('');
+        }
+      } catch (e) {}
     }
 
     async function loadAdminQueue() {
-      const res = await fetch('/api/claims/queue');
-      const claims = await res.json();
-      const container = document.getElementById('adminQueue');
-      if(claims.length === 0) {
-        container.innerHTML = `<div class="bg-white p-8 rounded-2xl text-center text-gray-400 border border-gray-200">No pending claims in the review queue.</div>`;
-        return;
-      }
-      container.innerHTML = claims.map(c => `
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div class="space-y-1">
-            <h4 class="font-bold text-gray-900">${c.ITEM_TITLE || c.item_title}</h4>
-            <p class="text-xs text-gray-600"><span class="font-semibold">Claimant:</span> ${c.CLAIMANT_NAME || c.claimant_name}</p>
-            <p class="text-xs text-gray-500 bg-gray-50 p-2 rounded-lg mt-1 border border-gray-100"><span class="font-semibold">Proof:</span> ${c.PROOF_DESCRIPTION || c.proof_description}</p>
+      try {
+        const res = await fetch('/api/claims/queue');
+        const queue = await res.json();
+        const container = document.getElementById('adminQueueList');
+        if (!queue.length) {
+          container.innerHTML = `<div style="padding: 40px; background: #fff; border: 1px solid var(--line); border-radius: 14px; text-align: center; color: #828e7c;">No pending claims in review queue.</div>`;
+          return;
+        }
+        container.innerHTML = queue.map(c => `
+          <div style="background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 22px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+            <div>
+              <h4 style="font-size: 16px; font-weight: 700; color: #1e332a;">${c.ITEM_TITLE}</h4>
+              <p style="font-size: 12px; color: #6b7764; margin: 4px 0 8px;">Claimant: <strong>${c.CLAIMANT_NAME}</strong> (${c.CLAIMANT_EMAIL || ''})</p>
+              <div style="background: #f7f9f4; border-left: 3px solid #63855a; padding: 10px 14px; font-size: 12.5px; color: #3b5238; border-radius: 4px;">
+                "${c.PROOF_DESCRIPTION}"
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="reviewClaim(${c.CLAIM_ID}, 'Approved')" class="button primary small"><i class="fa-solid fa-check"></i> Approve</button>
+              <button onclick="reviewClaim(${c.CLAIM_ID}, 'Rejected')" class="button light small" style="color: #a34835;"><i class="fa-solid fa-xmark"></i> Reject</button>
+            </div>
           </div>
-          <div class="flex space-x-2 w-full sm:w-auto justify-end">
-            <button onclick="reviewClaim(${c.CLAIM_ID || c.claim_id}, 'Approved')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 text-xs font-medium rounded-xl transition">Approve</button>
-            <button onclick="reviewClaim(${c.CLAIM_ID || c.claim_id}, 'Rejected')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-xs font-medium rounded-xl transition">Reject</button>
-          </div>
-        </div>
-      `).join('');
+        `).join('');
+      } catch (err) {}
     }
 
     async function reviewClaim(claimId, status) {
       if (!currentUser) { alert('Please sign in as admin first!'); return; }
-      const comment = prompt("Optional review note:");
       await fetch('/api/claims/review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ CLAIM_ID: claimId, STATUS: status, ADMIN_ID: currentUser.USER_ID || currentUser.user_id, REVIEW_COMMENT: comment })
+        body: JSON.stringify({ CLAIM_ID: claimId, STATUS: status, ADMIN_ID: currentUser.USER_ID })
       });
       loadAdminQueue();
+      fetchItems();
     }
 
-    async function sendScoutMessage() {
-      if (!currentUser) { alert('Please sign in first!'); switchTab('signin'); return; }
-      const input = document.getElementById('chatInput');
-      const message = input.value;
-      if (!message) return;
-      const history = document.getElementById('chatHistory');
-      history.innerHTML += `
-        <div class="flex items-end justify-end space-x-2">
-          <div class="bg-indigo-600 text-white p-3 rounded-2xl max-w-[80%] text-sm shadow-sm">${message}</div>
-        </div>`;
-      input.value = '';
-      history.scrollTop = history.scrollHeight;
-      const res = await fetch('/api/scout/chat', {
+    function switchNav(view) {
+      if (view === 'dashboard' && !currentUser) {
+        window.location.href = '/login';
+        return;
+      }
+      ['noticeboard', 'dashboard', 'admin'].forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        const btn = document.getElementById(`nav-${v}`);
+        if (el) el.style.display = (v === view) ? 'block' : 'none';
+        if (btn) btn.classList.toggle('active', v === view);
+      });
+      if (view === 'dashboard') renderDashboard();
+      if (view === 'admin') loadAdminQueue();
+    }
+
+    function setKindFilter(k) {
+      currentKindFilter = k;
+      ['all', 'found', 'lost'].forEach(tab => {
+        document.getElementById(`tab-${tab}`).classList.toggle('active', tab === k.toLowerCase());
+      });
+      renderNoticeboard();
+    }
+
+    function filterItems() { renderNoticeboard(); }
+
+    function openReportModal(type) {
+      if (!currentUser) {
+        window.location.href = '/login';
+        return;
+      }
+      document.getElementById('reportTypeInput').value = type;
+      document.getElementById('reportModalTitle').innerText = type === 'Lost' ? 'I lost something' : 'I found something';
+      document.getElementById('reportDate').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('reportModal').style.display = 'flex';
+    }
+
+    function openClaimModal(itemId) {
+      if (!currentUser) {
+        window.location.href = '/login';
+        return;
+      }
+      document.getElementById('claimItemId').value = itemId;
+      document.getElementById('claimModal').style.display = 'flex';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+
+    async function handleCreateReport(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('USER_ID', currentUser.USER_ID);
+      formData.append('TITLE', document.getElementById('reportTitle').value);
+      formData.append('CATEGORY', document.getElementById('reportCategory').value);
+      formData.append('LOCATION', document.getElementById('reportLocation').value);
+      formData.append('DATE_EVENT', document.getElementById('reportDate').value);
+      formData.append('DESCRIPTION', document.getElementById('reportDescription').value);
+      formData.append('TYPE', document.getElementById('reportTypeInput').value);
+      const img = document.getElementById('reportImage').files[0];
+      if (img) formData.append('image', img);
+
+      await fetch('/api/items', { method: 'POST', body: formData });
+      closeModal('reportModal');
+      fetchItems();
+    }
+
+    async function handleClaimSubmit(e) {
+      e.preventDefault();
+      const itemId = document.getElementById('claimItemId').value;
+      const proof = document.getElementById('claimProof').value;
+      await fetch('/api/claims', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ USER_ID: currentUser.USER_ID || currentUser.user_id, MESSAGE: message })
+        body: JSON.stringify({ ITEM_ID: itemId, CLAIMANT_ID: currentUser.USER_ID, PROOF_DESCRIPTION: proof })
       });
-      const data = await res.json();
-      history.innerHTML += `
-        <div class="flex items-start space-x-2">
-          <div class="bg-indigo-600 text-white rounded-full h-7 w-7 flex items-center justify-center text-xs font-bold">🤖</div>
-          <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-200 max-w-[80%] text-gray-700 whitespace-pre-line">${data.REPLY || data.reply}</div>
-        </div>`;
-      history.scrollTop = history.scrollHeight;
+      closeModal('claimModal');
+      alert('Claim submitted successfully for review.');
+      fetchItems();
     }
 
-    // Automatically load items on initial page load
+    function handleSignOut() {
+      localStorage.removeItem('campus_user');
+      window.location.href = '/login?signedout=1';
+    }
+
     window.onload = function() {
-      loadItems();
+      // Check stored user from login
+      const stored = localStorage.getItem('campus_user');
+      if (stored) {
+        try {
+          currentUser = JSON.parse(stored);
+          const nameInitial = (currentUser.FULL_NAME || 'U')[0].toUpperCase();
+          document.getElementById('userAccountBox').innerHTML = `
+            <div class="account-pill">
+              <span class="account-avatar">${nameInitial}</span>
+              <span>${currentUser.FULL_NAME} (${currentUser.ROLE})</span>
+              <button class="signout-btn" onclick="handleSignOut()" title="Sign out"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+            </div>
+          `;
+        } catch (e) {
+          currentUser = null;
+        }
+      }
+      fetchItems();
     };
   </script>
 </body>

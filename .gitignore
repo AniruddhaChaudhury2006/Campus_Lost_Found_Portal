@@ -1,0 +1,20 @@
+# Dependency directories
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Uploaded files (keep the folder via .gitkeep)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# SQLite database journals / temp files
+*.sqlite-journal
+*.db-journal
+
