@@ -125,3 +125,24 @@ exports.deleteItem = (req, res) => {
         res.json({ message: 'Item deleted successfully' });
     });
 };
+
+// GET /api/items/stats - Real-time statistics counters
+exports.getStats = (req, res) => {
+    const query = `
+        SELECT 
+            COUNT(*) AS total,
+            SUM(CASE WHEN LOWER(TYPE) = 'found' AND STATUS IN ('Open', 'Claimed') THEN 1 ELSE 0 END) AS found_count,
+            SUM(CASE WHEN LOWER(TYPE) = 'lost' AND STATUS IN ('Open', 'Claimed') THEN 1 ELSE 0 END) AS lost_count,
+            SUM(CASE WHEN STATUS IN ('Matched', 'Closed') THEN 1 ELSE 0 END) AS resolved_count
+        FROM ITEMS
+    `;
+    db.get(query, [], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({
+            total: (row && row.total) || 0,
+            found: (row && row.found_count) || 0,
+            lost: (row && row.lost_count) || 0,
+            resolved: (row && row.resolved_count) || 0
+        });
+    });
+};
